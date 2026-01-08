@@ -56,6 +56,9 @@ export default function Landing() {
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                   placeholder="Enter username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="username"
                 />
               </div>
               <div>
@@ -66,6 +69,9 @@ export default function Landing() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="current-password"
                 />
               </div>
             </div>

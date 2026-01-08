@@ -52,7 +52,9 @@ export async function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       const configured = getConfiguredCredentials();
-      if (username !== configured.username || password !== configured.password) {
+      const normalizedUsername = username.trim();
+      const normalizedPassword = password.trim();
+      if (normalizedUsername !== configured.username || normalizedPassword !== configured.password) {
         return done(null, false, { message: "Invalid credentials" });
       }
 
@@ -64,7 +66,7 @@ export async function setupAuth(app: Express) {
         lastName: "User",
       });
 
-      return done(null, { id: userId, email: username });
+      return done(null, { id: userId, email: normalizedUsername });
     })
   );
 
