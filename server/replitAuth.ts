@@ -8,6 +8,11 @@ import { storage } from "./storage";
 const DEFAULT_USERNAME = "vet";
 const DEFAULT_PASSWORD = "vet";
 
+const shouldUseSsl =
+  process.env.PGSSLMODE === "require" ||
+  process.env.DATABASE_URL?.includes("sslmode=require") ||
+  process.env.NODE_ENV === "production";
+
 function getConfiguredCredentials() {
   return {
     username: process.env.APP_USERNAME || DEFAULT_USERNAME,
@@ -20,6 +25,7 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
+    ssl: shouldUseSsl ? { rejectUnauthorized: false } : undefined,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
