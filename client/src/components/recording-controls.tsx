@@ -315,172 +315,12 @@ export default function RecordingControls() {
         <p className="text-center text-gray-600">Record and transcribe your veterinary consultation</p>
       </CardHeader>
       <CardContent>
-        {/* Customer Selection */}
-        <div className="mb-6">
-          <Label htmlFor="customer">Select Patient *</Label>
-          <div className="flex gap-2 mt-2">
-            <Select 
-              value={selectedCustomerId} 
-              onValueChange={(value) => {
-                setSelectedCustomerId(value);
-                const selectedCustomer = customers?.find(c => c.id.toString() === value);
-                if (selectedCustomer) {
-                  setCustomerName(selectedCustomer.name);
-                }
-              }}
-              disabled={recordingState !== 'idle'}
-            >
-              <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Choose a patient or add new one" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers?.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id.toString()}>
-                    <div className="flex items-center">
-                      <span className="font-medium">{customer.patientId}</span>
-                      <span className="ml-2">{customer.petName || "Pet"}</span>
-                      <span className="ml-2 text-sm text-gray-500">({customer.name})</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Dialog open={isCreateCustomerOpen} onOpenChange={setIsCreateCustomerOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={recordingState !== 'idle'}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Patient
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add New Patient</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="newPatientId">Patient ID *</Label>
-                    <Input
-                      id="newPatientId"
-                      value={newCustomer.patientId || ""}
-                      onChange={(e) => setNewCustomer({ ...newCustomer, patientId: e.target.value })}
-                      placeholder="Enter patient ID"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newCustomerName">Client Name *</Label>
-                    <Input
-                      id="newCustomerName"
-                      value={newCustomer.name || ""}
-                      onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                      placeholder="Enter client name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newPetName">Pet Name</Label>
-                    <Input
-                      id="newPetName"
-                      value={newCustomer.petName || ""}
-                      onChange={(e) => setNewCustomer({ ...newCustomer, petName: e.target.value })}
-                      placeholder="Pet's name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newPetBreed">Pet Breed</Label>
-                    <Input
-                      id="newPetBreed"
-                      value={newCustomer.petBreed || ""}
-                      onChange={(e) => setNewCustomer({ ...newCustomer, petBreed: e.target.value })}
-                      placeholder="Breed"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newPhone">Phone</Label>
-                    <Input
-                      id="newPhone"
-                      value={newCustomer.phone || ""}
-                      onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                      placeholder="Phone number"
-                    />
-                  </div>
-                </div>
-                  <div className="flex justify-end space-x-2 mt-6">
-                    <Button variant="outline" onClick={() => setIsCreateCustomerOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                      if (!newCustomer.patientId?.trim() || !newCustomer.name?.trim()) {
-                        toast({
-                          title: "Error",
-                          description: "Patient ID and client name are required",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      createCustomerMutation.mutate(newCustomer as InsertCustomer);
-                    }}
-                    disabled={createCustomerMutation.isPending}
-                  >
-                    {createCustomerMutation.isPending ? "Creating..." : "Create Patient"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-          {!customers || customers.length === 0 ? (
-            <p className="text-sm text-gray-500 mt-2">
-              No patients found. <span className="text-blue-600 cursor-pointer" onClick={() => setIsCreateCustomerOpen(true)}>Add your first patient</span> to begin.
+        {recordingState === 'recording' ? (
+          <>
+            <p className="text-center text-lg font-semibold text-gray-800">
+              Recording in progress
             </p>
-          ) : null}
-        </div>
-
-        {/* Consent Reminder */}
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id="consentConfirmed"
-              checked={consentConfirmed}
-              onCheckedChange={(value) => setConsentConfirmed(Boolean(value))}
-              disabled={recordingState !== 'idle'}
-            />
-            <div>
-              <Label htmlFor="consentConfirmed" className="text-sm font-medium text-amber-900">
-                Client consent confirmed
-              </Label>
-              <p className="text-xs text-amber-700 mt-1">
-                Please remind the client and confirm consent before recording.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recording Status Indicator */}
-        <div className="mb-6">
-          <div className="flex items-center justify-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center">
-              <div className={`h-3 w-3 rounded-full mr-2 ${getStatusColor()}`}></div>
-              <span className="text-sm font-medium text-gray-700">{getStatusText()}</span>
-            </div>
-            <div className="text-sm text-gray-500">{formatDuration(duration)}</div>
-          </div>
-        </div>
-
-        {/* Recording Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {recordingState === 'idle' && (
-            <Button 
-              onClick={startRecording}
-              className="bg-secondary hover:bg-green-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
-              style={{ minHeight: "96px" }}
-              disabled={!selectedCustomerId || !customerName.trim() || !consentConfirmed}
-            >
-              <Play className="mr-3" size={48} />
-              Start Recording
-            </Button>
-          )}
-          
-          {recordingState === 'recording' && (
-            <>
+            <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 onClick={pauseRecording}
                 className="bg-warning hover:bg-yellow-600 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
@@ -497,30 +337,197 @@ export default function RecordingControls() {
                 <Square className="mr-3" size={48} />
                 Finish & Process
               </Button>
-            </>
-          )}
-          
-          {recordingState === 'paused' && (
-            <>
-              <Button 
-                onClick={resumeRecording}
-                className="bg-secondary hover:bg-green-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
-                style={{ minHeight: "96px" }}
-              >
-                <Play className="mr-3" size={48} />
-                Resume
-              </Button>
-              <Button 
-                onClick={stopRecording}
-                className="bg-accent hover:bg-red-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
-                style={{ minHeight: "96px" }}
-              >
-                <Square className="mr-3" size={48} />
-                Finish & Process
-              </Button>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Customer Selection */}
+            <div className="mb-6">
+              <Label htmlFor="customer">Select Patient *</Label>
+              <div className="flex gap-2 mt-2">
+                <Select 
+                  value={selectedCustomerId} 
+                  onValueChange={(value) => {
+                    setSelectedCustomerId(value);
+                    const selectedCustomer = customers?.find(c => c.id.toString() === value);
+                    if (selectedCustomer) {
+                      setCustomerName(selectedCustomer.name);
+                    }
+                  }}
+                  disabled={recordingState !== 'idle'}
+                >
+                  <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Choose a patient or add new one" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers?.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id.toString()}>
+                        <div className="flex items-center">
+                          <span className="font-medium">{customer.patientId}</span>
+                          <span className="ml-2">{customer.petName || "Pet"}</span>
+                          <span className="ml-2 text-sm text-gray-500">({customer.name})</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Dialog open={isCreateCustomerOpen} onOpenChange={setIsCreateCustomerOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={recordingState !== 'idle'}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Patient
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add New Patient</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="newPatientId">Patient ID *</Label>
+                        <Input
+                          id="newPatientId"
+                          value={newCustomer.patientId || ""}
+                          onChange={(e) => setNewCustomer({ ...newCustomer, patientId: e.target.value })}
+                          placeholder="Enter patient ID"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newCustomerName">Client Name *</Label>
+                        <Input
+                          id="newCustomerName"
+                          value={newCustomer.name || ""}
+                          onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                          placeholder="Enter client name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newPetName">Pet Name</Label>
+                        <Input
+                          id="newPetName"
+                          value={newCustomer.petName || ""}
+                          onChange={(e) => setNewCustomer({ ...newCustomer, petName: e.target.value })}
+                          placeholder="Pet's name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newPetBreed">Pet Breed</Label>
+                        <Input
+                          id="newPetBreed"
+                          value={newCustomer.petBreed || ""}
+                          onChange={(e) => setNewCustomer({ ...newCustomer, petBreed: e.target.value })}
+                          placeholder="Breed"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newPhone">Phone</Label>
+                        <Input
+                          id="newPhone"
+                          value={newCustomer.phone || ""}
+                          onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                          placeholder="Phone number"
+                        />
+                      </div>
+                    </div>
+                      <div className="flex justify-end space-x-2 mt-6">
+                        <Button variant="outline" onClick={() => setIsCreateCustomerOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                          if (!newCustomer.patientId?.trim() || !newCustomer.name?.trim()) {
+                            toast({
+                              title: "Error",
+                              description: "Patient ID and client name are required",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          createCustomerMutation.mutate(newCustomer as InsertCustomer);
+                        }}
+                        disabled={createCustomerMutation.isPending}
+                      >
+                        {createCustomerMutation.isPending ? "Creating..." : "Create Patient"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              {!customers || customers.length === 0 ? (
+                <p className="text-sm text-gray-500 mt-2">
+                  No patients found. <span className="text-blue-600 cursor-pointer" onClick={() => setIsCreateCustomerOpen(true)}>Add your first patient</span> to begin.
+                </p>
+              ) : null}
+            </div>
+
+            {/* Consent Reminder */}
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="consentConfirmed"
+                  checked={consentConfirmed}
+                  onCheckedChange={(value) => setConsentConfirmed(Boolean(value))}
+                  disabled={recordingState !== 'idle'}
+                />
+                <div>
+                  <Label htmlFor="consentConfirmed" className="text-sm font-medium text-amber-900">
+                    Client consent confirmed
+                  </Label>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Please remind the client and confirm consent before recording.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recording Status Indicator */}
+            <div className="mb-6">
+              <div className="flex items-center justify-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <div className={`h-3 w-3 rounded-full mr-2 ${getStatusColor()}`}></div>
+                  <span className="text-sm font-medium text-gray-700">{getStatusText()}</span>
+                </div>
+                <div className="text-sm text-gray-500">{formatDuration(duration)}</div>
+              </div>
+            </div>
+
+            {/* Recording Controls */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {recordingState === 'idle' && (
+                <Button 
+                  onClick={startRecording}
+                  className="bg-secondary hover:bg-green-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
+                  style={{ minHeight: "96px" }}
+                  disabled={!selectedCustomerId || !customerName.trim() || !consentConfirmed}
+                >
+                  <Play className="mr-3" size={48} />
+                  Start Recording
+                </Button>
+              )}
+              
+              {recordingState === 'paused' && (
+                <>
+                  <Button 
+                    onClick={resumeRecording}
+                    className="bg-secondary hover:bg-green-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
+                    style={{ minHeight: "96px" }}
+                  >
+                    <Play className="mr-3" size={48} />
+                    Resume
+                  </Button>
+                  <Button 
+                    onClick={stopRecording}
+                    className="bg-accent hover:bg-red-700 h-20 sm:h-24 text-2xl sm:text-4xl px-6 sm:px-16 py-6 sm:py-10 w-full sm:w-auto text-center leading-tight whitespace-normal [&_svg]:size-8 sm:[&_svg]:size-12"
+                    style={{ minHeight: "96px" }}
+                  >
+                    <Square className="mr-3" size={48} />
+                    Finish & Process
+                  </Button>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
