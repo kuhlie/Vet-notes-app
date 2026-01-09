@@ -106,7 +106,7 @@ export default function RecordingControls() {
         description: "Recording uploaded successfully. Processing transcription...",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/consultations"] });
-      resetRecording();
+      resetRecordingState();
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -156,11 +156,10 @@ export default function RecordingControls() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const resetRecording = () => {
+  const resetRecordingState = () => {
     setRecordingState('idle');
     setDuration(0);
     setAudioChunks([]);
-    setCustomerName('');
     setMediaRecorder(null);
     setConsentConfirmed(false);
     stopTimer();
@@ -255,7 +254,6 @@ export default function RecordingControls() {
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
-      setRecordingState('stopped');
       stopTimer();
       
       // Wait for final data and create blob
@@ -266,7 +264,7 @@ export default function RecordingControls() {
             description: "No audio data was recorded. Please try again.",
             variant: "destructive",
           });
-          resetRecording();
+          resetRecordingState();
           return;
         }
 
@@ -281,12 +279,13 @@ export default function RecordingControls() {
             description: "Recording is empty. Please try again.",
             variant: "destructive",
           });
-          resetRecording();
+          resetRecordingState();
           return;
         }
 
         console.log(`Created audio blob: ${audioBlob.size} bytes, type: ${mimeType}`);
         uploadMutation.mutate({ audioBlob, customerName, customerId: selectedCustomerId });
+        resetRecordingState();
       }, 100); // Small delay to ensure all data is collected
     }
   };
@@ -471,10 +470,10 @@ export default function RecordingControls() {
           {recordingState === 'idle' && (
             <Button 
               onClick={startRecording}
-              className="bg-secondary hover:bg-green-700 text-base sm:text-lg lg:text-xl px-6 sm:px-10 py-5 sm:py-7 w-full sm:w-auto"
-              disabled={uploadMutation.isPending || !selectedCustomerId || !customerName.trim() || !consentConfirmed}
+              className="bg-secondary hover:bg-green-700 text-lg sm:text-xl lg:text-2xl px-8 sm:px-12 py-6 sm:py-8 w-full sm:w-auto"
+              disabled={!selectedCustomerId || !customerName.trim() || !consentConfirmed}
             >
-              <Play className="mr-2" size={28} />
+              <Play className="mr-2" size={32} />
               Start Recording
             </Button>
           )}
@@ -483,16 +482,16 @@ export default function RecordingControls() {
             <>
               <Button 
                 onClick={pauseRecording}
-                className="bg-warning hover:bg-yellow-600 text-base sm:text-lg lg:text-xl px-6 sm:px-10 py-5 sm:py-7 w-full sm:w-auto"
+                className="bg-warning hover:bg-yellow-600 text-lg sm:text-xl lg:text-2xl px-8 sm:px-12 py-6 sm:py-8 w-full sm:w-auto"
               >
-                <Pause className="mr-2" size={28} />
+                <Pause className="mr-2" size={32} />
                 Pause
               </Button>
               <Button 
                 onClick={stopRecording}
-                className="bg-accent hover:bg-red-700 text-base sm:text-lg lg:text-xl px-6 sm:px-10 py-5 sm:py-7 w-full sm:w-auto"
+                className="bg-accent hover:bg-red-700 text-lg sm:text-xl lg:text-2xl px-8 sm:px-12 py-6 sm:py-8 w-full sm:w-auto"
               >
-                <Square className="mr-2" size={28} />
+                <Square className="mr-2" size={32} />
                 Finish & Process
               </Button>
             </>
@@ -502,16 +501,16 @@ export default function RecordingControls() {
             <>
               <Button 
                 onClick={resumeRecording}
-                className="bg-secondary hover:bg-green-700 text-base sm:text-lg lg:text-xl px-6 sm:px-10 py-5 sm:py-7 w-full sm:w-auto"
+                className="bg-secondary hover:bg-green-700 text-lg sm:text-xl lg:text-2xl px-8 sm:px-12 py-6 sm:py-8 w-full sm:w-auto"
               >
-                <Play className="mr-2" size={28} />
+                <Play className="mr-2" size={32} />
                 Resume
               </Button>
               <Button 
                 onClick={stopRecording}
-                className="bg-accent hover:bg-red-700 text-base sm:text-lg lg:text-xl px-6 sm:px-10 py-5 sm:py-7 w-full sm:w-auto"
+                className="bg-accent hover:bg-red-700 text-lg sm:text-xl lg:text-2xl px-8 sm:px-12 py-6 sm:py-8 w-full sm:w-auto"
               >
-                <Square className="mr-2" size={28} />
+                <Square className="mr-2" size={32} />
                 Finish & Process
               </Button>
             </>
