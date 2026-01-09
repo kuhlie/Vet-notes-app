@@ -470,11 +470,11 @@ export default function RecordingControls() {
           {recordingState === 'idle' && (
             <Button 
               onClick={startRecording}
-              className="bg-secondary hover:bg-green-700 h-16 text-2xl px-10 py-6 w-full sm:w-auto [&_svg]:size-9"
-              style={{ minHeight: "72px" }}
+              className="bg-secondary hover:bg-green-700 h-24 text-4xl px-16 py-10 w-full sm:w-auto [&_svg]:size-12"
+              style={{ minHeight: "96px" }}
               disabled={!selectedCustomerId || !customerName.trim() || !consentConfirmed}
             >
-              <Play className="mr-2" size={36} />
+              <Play className="mr-3" size={48} />
               Start Recording
             </Button>
           )}
@@ -483,18 +483,18 @@ export default function RecordingControls() {
             <>
               <Button 
                 onClick={pauseRecording}
-                className="bg-warning hover:bg-yellow-600 h-16 text-2xl px-10 py-6 w-full sm:w-auto [&_svg]:size-9"
-                style={{ minHeight: "72px" }}
+                className="bg-warning hover:bg-yellow-600 h-24 text-4xl px-16 py-10 w-full sm:w-auto [&_svg]:size-12"
+                style={{ minHeight: "96px" }}
               >
-                <Pause className="mr-2" size={36} />
+                <Pause className="mr-3" size={48} />
                 Pause
               </Button>
               <Button 
                 onClick={stopRecording}
-                className="bg-accent hover:bg-red-700 h-16 text-2xl px-10 py-6 w-full sm:w-auto [&_svg]:size-9"
-                style={{ minHeight: "72px" }}
+                className="bg-accent hover:bg-red-700 h-24 text-4xl px-16 py-10 w-full sm:w-auto [&_svg]:size-12"
+                style={{ minHeight: "96px" }}
               >
-                <Square className="mr-2" size={36} />
+                <Square className="mr-3" size={48} />
                 Finish & Process
               </Button>
             </>
@@ -504,18 +504,18 @@ export default function RecordingControls() {
             <>
               <Button 
                 onClick={resumeRecording}
-                className="bg-secondary hover:bg-green-700 h-16 text-2xl px-10 py-6 w-full sm:w-auto [&_svg]:size-9"
-                style={{ minHeight: "72px" }}
+                className="bg-secondary hover:bg-green-700 h-24 text-4xl px-16 py-10 w-full sm:w-auto [&_svg]:size-12"
+                style={{ minHeight: "96px" }}
               >
-                <Play className="mr-2" size={36} />
+                <Play className="mr-3" size={48} />
                 Resume
               </Button>
               <Button 
                 onClick={stopRecording}
-                className="bg-accent hover:bg-red-700 h-16 text-2xl px-10 py-6 w-full sm:w-auto [&_svg]:size-9"
-                style={{ minHeight: "72px" }}
+                className="bg-accent hover:bg-red-700 h-24 text-4xl px-16 py-10 w-full sm:w-auto [&_svg]:size-12"
+                style={{ minHeight: "96px" }}
               >
-                <Square className="mr-2" size={36} />
+                <Square className="mr-3" size={48} />
                 Finish & Process
               </Button>
             </>
