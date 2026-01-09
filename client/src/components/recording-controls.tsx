@@ -15,7 +15,11 @@ import type { Customer, InsertCustomer } from "@shared/schema";
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'stopped';
 
-export default function RecordingControls() {
+type RecordingControlsProps = {
+  onRecordingStateChange?: (state: RecordingState) => void;
+};
+
+export default function RecordingControls({ onRecordingStateChange }: RecordingControlsProps) {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [customerName, setCustomerName] = useState('');
@@ -135,6 +139,10 @@ export default function RecordingControls() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    onRecordingStateChange?.(recordingState);
+  }, [onRecordingStateChange, recordingState]);
 
   const startTimer = () => {
     intervalRef.current = setInterval(() => {
