@@ -235,9 +235,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Audio file not found on disk" });
       }
 
-      res.setHeader("Content-Type", getAudioContentType(audioPath));
-      res.setHeader("Content-Disposition", "inline");
-      fs.createReadStream(audioPath).pipe(res);
+      const isMP3 = audioPath.toLowerCase().endsWith(".mp3");
+      const baseName =
+        consultation.fileName?.replace(/[^a-zA-Z0-9_]/g, "_") ||
+        `consultation_${consultationId}`;
+      const mp3OutputPath = audioPath.replace(/\.[^/.]+$/, ".mp3");
+      const mp3FileName = `${baseName}.mp3`;
+
+      if (isMP3 || fs.existsSync(mp3OutputPath)) {
+        const streamPath = isMP3 ? audioPath : mp3OutputPath;
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Disposition", `inline; filename="${mp3FileName}"`);
+        return fs.createReadStream(streamPath).pipe(res);
+      }
+
+      try {
+        const ffmpeg = spawn("ffmpeg", [
+          "-i",
+          audioPath,
+          "-codec:a",
+          "libmp3lame",
+          "-b:a",
+          "128k",
+          "-f",
+          "mp3",
+          mp3OutputPath,
+        ]);
+
+        ffmpeg.on("close", (code: number) => {
+          if (code === 0 && fs.existsSync(mp3OutputPath)) {
+            res.setHeader("Content-Type", "audio/mpeg");
+            res.setHeader("Content-Disposition", `inline; filename="${mp3FileName}"`);
+            return fs.createReadStream(mp3OutputPath).pipe(res);
+          }
+          res.setHeader("Content-Type", getAudioContentType(audioPath));
+          res.setHeader("Content-Disposition", "inline");
+          return fs.createReadStream(audioPath).pipe(res);
+        });
+
+        ffmpeg.on("error", (err: Error) => {
+          console.error("FFmpeg error:", err);
+          res.setHeader("Content-Type", getAudioContentType(audioPath));
+          res.setHeader("Content-Disposition", "inline");
+          return fs.createReadStream(audioPath).pipe(res);
+        });
+      } catch (error) {
+        console.error("Error spawning ffmpeg:", error);
+        res.setHeader("Content-Type", getAudioContentType(audioPath));
+        res.setHeader("Content-Disposition", "inline");
+        return fs.createReadStream(audioPath).pipe(res);
+      }
     } catch (error) {
       console.error("Error streaming audio:", error);
       res.status(500).json({ message: "Failed to stream audio" });
