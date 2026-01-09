@@ -92,6 +92,8 @@ Please provide a SOAP note in JSON format with the following fields:
 - assessment: Differential diagnoses or assessment
 - plan: Treatment plan, medications, follow-up, client instructions
 
+If a section is not mentioned in the transcript, use "Not mentioned".
+
 Transcription:
 ${fullTranscription}
 
@@ -115,10 +117,10 @@ Respond with only the JSON object.`;
     const result = JSON.parse(response.choices[0].message.content || "{}");
 
     return {
-      subjective: result.subjective || "",
-      objective: result.objective || "",
-      assessment: result.assessment || "",
-      plan: result.plan || "",
+      subjective: result.subjective || "Not mentioned",
+      objective: result.objective || "Not mentioned",
+      assessment: result.assessment || "Not mentioned",
+      plan: result.plan || "Not mentioned",
     };
   } catch (error) {
     console.error("Error generating SOAP note:", error);
